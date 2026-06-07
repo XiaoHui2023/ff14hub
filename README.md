@@ -1,11 +1,11 @@
-# ff14-agent
+# ff14hub
 
-面向《最终幻想 XIV》的本地 Agent 工具仓库（Python）。当前为脚手架与 Agent 协作三件套；游戏侧能力与 CLI 在后续版本补齐。
+面向《最终幻想 XIV》的本地 Agent 工具仓库（Python）。仓库：[github.com/XiaoHui2023/ff14hub](https://github.com/XiaoHui2023/ff14hub)。
 
 ## 项目结构与目录布局
 
 ```
-ff14_agent/
+ff14hub/
 ├── .cursor/skills/          # Agent 预加载、设计笔记、changelog（进库）
 ├── src/                     # 入口 python src
 ├── tests/                   # 单元测试

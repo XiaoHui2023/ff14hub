@@ -21,7 +21,7 @@ _RANK_CHOICES = {
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="ff14-agent",
+        prog="ff14hub",
         description="FF14 狩猎追踪 Agent：轮询 Bear Tracker 并输出终端日志与新检出资料。",
     )
     parser.add_argument(
