@@ -1,10 +1,45 @@
-# 复制为 config.yaml 后按需修改。
+# ff14hub 配置样例
+#
+# 用法：复制本文件为 config.yaml（与 run.bat 同目录），按需改值后执行 run.bat 或 python src。
+# 数据来自 Bear Tracker：https://tracker.beartoolkit.com/timer
+# 名称须与站点上显示的数据中心、世界名一致（国服用中文，国际服用英文）。
 
-data_centers: []
-worlds: []
+# 数据中心列表，可写多项。
+# 国服示例：猫小胖、莫古力
+# 国际服示例：Aether、Crystal
+# [] 表示不按数据中心筛选（结果很多，日常追踪一般不这样配）
+data_centers:
+  - 猫小胖
+
+# 世界列表，可写多项；世界须属于上面填的数据中心。
+# 只填 data_centers、这里留 [] 时，会展开这些数据中心下的全部世界。
+# 国服示例：静语庄园、延夏
+# 国际服示例：Adamantoise、Cactuar
+worlds:
+  - 静语庄园
+
+# 狩猎等级，可写 s、a、fate 的任意组合。
+# s = S 级，a = A 级，fate = FATE
 ranks:
   - s
-patches: []
+#  - a
+#  - fate
+
+# 资料片筛选，可写多项。
+# 可写 Bear Tracker 缩写（DT、EW、SB …）或中文资料片名（金曦之遗辉、红莲之狂潮 …）
+# [] 表示不过滤资料片
+patches:
+  - 金曦之遗辉
+#  - DT
+
+# 新检出刷点的聚合输出根目录（相对路径相对于仓库根）。
+# null：只在终端显示，不保存到文件
+# 目录示例：output/spawns
 spawn_output: null
+
+# 刚刷新宽限（秒）。在此时间内仍算「刚刷新」，轮询间隔会偏短。
 recent_grace_seconds: 900
+
+# false：持续轮询，终端会显示下次爬取时间，Ctrl+C 退出
+# true：只爬取一次后退出
 once: false
