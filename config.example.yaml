@@ -1,0 +1,10 @@
+# 复制为 config.yaml 后按需修改。
+
+data_centers: []
+worlds: []
+ranks:
+  - s
+patches: []
+spawn_output: null
+recent_grace_seconds: 900
+once: false

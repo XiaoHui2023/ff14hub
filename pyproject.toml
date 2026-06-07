@@ -8,7 +8,9 @@ version = "0.0.0"
 requires-python = ">=3.10"
 dependencies = [
     "rich>=15.0",
-    "python-library-ff14-the-hunt>=0.0.2",
+    "python-library-ff14-the-hunt>=0.0.3",
+    "python-library-configlib>=0.1.5",
+    "pydantic>=2.0",
 ]
 
 [project.optional-dependencies]

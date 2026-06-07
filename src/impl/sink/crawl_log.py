@@ -26,17 +26,26 @@ _TIMER_STYLE = {
 class HuntCrawlLogSink:
     """将单次爬取结果渲染到终端。"""
 
-    def __init__(self, *, locale: HuntDisplayLocale = HuntDisplayLocale.ZH) -> None:
+    def __init__(
+        self,
+        *,
+        locale: HuntDisplayLocale = HuntDisplayLocale.ZH,
+        show_next_fetch: bool = True,
+    ) -> None:
         self._locale = locale
+        self._show_next_fetch = show_next_fetch
         self._console = make_console()
 
     def on_crawl(self, packet: HuntCrawlPacket) -> None:
         crawled = datetime.fromtimestamp(packet.crawled_at).strftime("%Y-%m-%d %H:%M:%S")
         new_count = len(packet.newly_spawned_marks)
-        summary = (
-            f"爬取 {crawled} · 共 {len(packet.marks)} 条"
-            f" · 新检出 {new_count} 条"
-        )
+        summary = f"爬取 {crawled}"
+        if self._show_next_fetch:
+            next_fetch = datetime.fromtimestamp(packet.next_fetch_at).strftime(
+                "%Y-%m-%d %H:%M:%S",
+            )
+            summary += f" · 下次 {next_fetch}"
+        summary += f" · 共 {len(packet.marks)} 条 · 新检出 {new_count} 条"
         self._console.print(Panel(summary, title="🎯 狩猎追踪", border_style="hunt.title"))
 
         if not packet.marks:
@@ -80,6 +89,9 @@ class HuntCrawlLogSink:
 
     def notify_export(self, bundle_dir: Path) -> None:
         self._console.print(f"[hunt.spawn]📁 已写入 {escape(str(bundle_dir))}[/]")
+
+    def notify_stopped(self) -> None:
+        self._console.print("[hunt.dim]已停止[/]")
 
     def _print_spawn_detail(self, mark: HuntMarkRecord) -> None:
         display = mark_to_display_dict(

@@ -3,6 +3,7 @@ __pycache__/
 dist/
 .venv/
 .env
+config.yaml
 debug.bat
 .pytest_cache/
 logs/

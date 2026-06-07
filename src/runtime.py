@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import signal
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -18,6 +19,7 @@ class AgentSettings:
     patches: list[str]
     spawn_output: Path | None
     recent_grace_seconds: float
+    continuous_poll: bool = True
 
 
 class HuntAgentRuntime:
@@ -25,7 +27,10 @@ class HuntAgentRuntime:
 
     def __init__(self, settings: AgentSettings) -> None:
         self._settings = settings
-        self._sink = HuntCrawlLogSink(locale=HuntDisplayLocale.ZH)
+        self._sink = HuntCrawlLogSink(
+            locale=HuntDisplayLocale.ZH,
+            show_next_fetch=settings.continuous_poll,
+        )
         self._hunt = FF14TheHunt(
             data_centers=settings.data_centers,
             worlds=settings.worlds,
@@ -41,7 +46,16 @@ class HuntAgentRuntime:
         return self._hunt
 
     def run(self) -> None:
-        self._hunt.run()
+        def _on_sigint(_signum: int, _frame: object | None) -> None:
+            self._hunt.stop(join=False)
+
+        previous_handler = signal.getsignal(signal.SIGINT)
+        signal.signal(signal.SIGINT, _on_sigint)
+        try:
+            self._hunt.run()
+        finally:
+            signal.signal(signal.SIGINT, previous_handler)
+        self._sink.notify_stopped()
 
     def crawl_once(self) -> HuntCrawlPacket:
         return self._hunt.crawl_once()
