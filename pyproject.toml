@@ -6,10 +6,13 @@ build-backend = "setuptools.build_meta"
 name = "ff14-agent"
 version = "0.0.0"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "rich>=15.0",
+    "python-library-ff14-the-hunt>=0.0.1",
+]
 
 [project.optional-dependencies]
-dev = ["pytest==9.0.3"]
+dev = ["pytest>=9.0.3"]
 
 [tool.setuptools]
 packages = []
