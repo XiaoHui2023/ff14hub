@@ -63,8 +63,8 @@ def test_mark_to_message_payload() -> None:
         ),
     )
     payload = mark_to_message_payload(mark)
-    assert payload.session_id == "ff14_hunt:静语庄园:hunt_a"
-    assert isinstance(payload.messages[0], TextMessageSegment)
-    assert "静语庄园" in payload.messages[0].data.text
-    assert isinstance(payload.messages[1], ImageMessageSegment)
-    assert payload.messages[1].data.mime_type == "image/png"
+    assert payload.group_id == "ff14_hunt:静语庄园:hunt_a"
+    assert isinstance(payload.message[0], TextMessageSegment)
+    assert "静语庄园" in payload.message[0].data.text
+    assert isinstance(payload.message[1], ImageMessageSegment)
+    assert payload.message[1].data.mime_type == "image/png"

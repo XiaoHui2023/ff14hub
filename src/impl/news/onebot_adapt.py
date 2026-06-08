@@ -32,8 +32,8 @@ def article_to_message_payload(
             ),
         )
     return MessagePayload(
-        source_type="group",
-        session_id=f"ff14_news:{article.channel_id}",
+        message_type="group",
+        group_id=f"ff14_news:{article.channel_id}",
         post_type="message",
-        messages=segments,
+        message=segments,
     )

@@ -31,10 +31,10 @@ def mark_to_message_payload(
     if image_segment is not None:
         segments.append(image_segment)
     return MessagePayload(
-        source_type="group",
-        session_id=f"ff14_hunt:{mark.world_name}:{mark.hunt_key}",
+        message_type="group",
+        group_id=f"ff14_hunt:{mark.world_name}:{mark.hunt_key}",
         post_type="message",
-        messages=segments,
+        message=segments,
     )
 
 

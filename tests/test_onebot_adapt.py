@@ -25,9 +25,9 @@ def test_article_to_message_payload() -> None:
         source_page_url="https://example.com/1",
     )
     payload = article_to_message_payload(article, display_name="国服官网")
-    assert payload.session_id == "ff14_news:cn_official"
-    assert payload.messages[0].type == "text"
-    assert isinstance(payload.messages[0], TextMessageSegment)
-    assert "测试标题" in payload.messages[0].data.text
-    assert isinstance(payload.messages[1], ImageMessageSegment)
-    assert payload.messages[1].data.content == "https://example.com/cover.jpg"
+    assert payload.group_id == "ff14_news:cn_official"
+    assert payload.message[0].type == "text"
+    assert isinstance(payload.message[0], TextMessageSegment)
+    assert "测试标题" in payload.message[0].data.text
+    assert isinstance(payload.message[1], ImageMessageSegment)
+    assert payload.message[1].data.content == "https://example.com/cover.jpg"
