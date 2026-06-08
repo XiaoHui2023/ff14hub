@@ -30,10 +30,22 @@ ff14hub/
 | `recent_grace_seconds` | 刚刷新宽限秒数 | `900` |
 | `once` | 为 `true` 时只爬取一次后退出 | `false` |
 
+## 日志
+
+`run.bat` 默认写入仓库根 `logs/`（普通摘要）与 `debug_logs/`（按模块分文件的 DEBUG）。直接 `python src` 时不写文件，仅控制台。
+
+| 短参 | 长参 | 含义 | 默认 |
+| --- | --- | --- | --- |
+| `-l` | `--log-dir` | 普通日志根目录 | 省略则不写文件 |
+| `-d` | `--debug-log-dir` | debug 日志根目录 | 省略则不写 debug 文件 |
+| `-g` | `--log-level` | 控制台与普通日志最低级别 | `info` |
+
+`-g` 管控制台与普通 `.log`；`-d` 目录下各模块 `.log` 始终只收 DEBUG。
+
 ## 开发与测试
 
 | 操作 | 命令 |
 | --- | --- |
 | 安装依赖 | 双击或执行 `update.bat` |
-| 运行 Agent | `run.bat` 或 `python src`（须已有 `config.yaml`） |
+| 运行 Agent | `run.bat` 或 `python src -l logs -d debug_logs`（须已有 `config.yaml`） |
 | 运行测试 | `test.bat` 或 `.venv\Scripts\pytest` |

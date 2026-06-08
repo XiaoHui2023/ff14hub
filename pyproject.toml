@@ -7,6 +7,8 @@ name = "ff14hub"
 version = "0.0.0"
 requires-python = ">=3.10"
 dependencies = [
+    "colorlog>=6.0",
+    "colorama>=0.4.6",
     "rich>=15.0",
     "python-library-ff14-the-hunt>=0.0.3",
     "python-library-ff14-news>=0.0.2",

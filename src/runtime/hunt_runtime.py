@@ -78,6 +78,11 @@ class HuntAgentRuntime:
             self._broadcaster = None
 
     def _on_crawl(self, packet: HuntCrawlPacket) -> None:
+        _log.info(
+            "狩猎爬取完成 marks=%s new=%s",
+            len(packet.marks),
+            len(packet.newly_spawned_marks),
+        )
         self._sink.on_crawl(packet)
         for mark in packet.newly_spawned_marks:
             if self._broadcaster is not None:

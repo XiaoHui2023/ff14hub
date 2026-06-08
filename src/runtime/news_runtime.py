@@ -73,6 +73,11 @@ class NewsAgentRuntime:
             window_end=crawl_time,
         )
         self._last_crawl_at = crawl_time
+        _log.info(
+            "新闻爬取完成 new=%s errors=%s",
+            len(new_articles),
+            len(bundle.errors),
+        )
 
         crawled_text = crawl_time.astimezone().strftime("%Y-%m-%d %H:%M:%S")
         next_fetch_text: str | None = None

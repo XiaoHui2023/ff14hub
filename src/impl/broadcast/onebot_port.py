@@ -101,7 +101,9 @@ class OnebotPortBroadcaster:
 
     async def _broadcast(self, payload: MessagePayload) -> None:
         if not self._clients:
+            _log.debug("onebot 广播跳过 client_count=0")
             return
+        _log.debug("onebot 广播 client_count=%s", len(self._clients))
         line = payload.model_dump_json() + "\n"
         data = line.encode("utf-8")
         dead: list[asyncio.StreamWriter] = []
