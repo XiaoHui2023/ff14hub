@@ -1,18 +1,19 @@
 from __future__ import annotations
 
-from datetime import datetime
-
 from pathlib import Path
 
-from ff14_the_hunt import HuntCrawlPacket, mark_to_display_dict
+from ff14_the_hunt import HuntCrawlPacket
 from ff14_the_hunt.models import HuntMarkRecord
 from ff14_the_hunt.locale.names import translate_hunt_name, translate_region
 from ff14_the_hunt.locale.tag import HuntDisplayLocale
+from rich.console import Group
 from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from impl.hunt.format import format_crawl_summary_text, format_mark_message_text
+from impl.hunt.map_image import render_mark_map_image
 from impl.sink.theme import make_console
 
 _TIMER_STYLE = {
@@ -37,15 +38,10 @@ class HuntCrawlLogSink:
         self._console = make_console()
 
     def on_crawl(self, packet: HuntCrawlPacket) -> None:
-        crawled = datetime.fromtimestamp(packet.crawled_at).strftime("%Y-%m-%d %H:%M:%S")
-        new_count = len(packet.newly_spawned_marks)
-        summary = f"爬取 {crawled}"
-        if self._show_next_fetch:
-            next_fetch = datetime.fromtimestamp(packet.next_fetch_at).strftime(
-                "%Y-%m-%d %H:%M:%S",
-            )
-            summary += f" · 下次 {next_fetch}"
-        summary += f" · 共 {len(packet.marks)} 条 · 新检出 {new_count} 条"
+        summary = format_crawl_summary_text(
+            packet,
+            show_next_fetch=self._show_next_fetch,
+        )
         self._console.print(Panel(summary, title="🎯 狩猎追踪", border_style="hunt.title"))
 
         if not packet.marks:
@@ -94,22 +90,15 @@ class HuntCrawlLogSink:
         self._console.print("[hunt.dim]已停止[/]")
 
     def _print_spawn_detail(self, mark: HuntMarkRecord) -> None:
-        display = mark_to_display_dict(
-            mark,
-            locale=self._locale,
-            embed_region_map_data=False,
+        body_lines: list[object] = [
+            Text(format_mark_message_text(mark, locale=self._locale)),
+        ]
+        map_image = render_mark_map_image(mark, console_width=self._console.width)
+        if map_image is not None:
+            body_lines.append(map_image)
+        self._console.print(
+            Panel(
+                Group(*body_lines),
+                border_style="hunt.spawn",
+            ),
         )
-        name = str(display.get("狩猎名") or display.get("hunt_name") or mark.hunt_key)
-        lines = [f"[bold hunt.new]✨ {escape(name)}[/] · {escape(mark.world_name)}"]
-        if mark.spawn_points:
-            for point in mark.spawn_points:
-                px = point.pixel_x
-                py = point.pixel_y
-                coord = (
-                    f"{point.point_key} "
-                    f"norm=({point.x:.3f}, {point.y:.3f})"
-                )
-                if px is not None and py is not None:
-                    coord += f" px=({px:.0f}, {py:.0f})"
-                lines.append(f"  [hunt.spawn]📍 {escape(coord)}[/]")
-        self._console.print(Panel("\n".join(lines), border_style="hunt.spawn"))

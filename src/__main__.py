@@ -7,8 +7,8 @@ _SRC = Path(__file__).resolve().parent
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
-from config import hub_config_to_agent_settings, load_hub_config  # noqa: E402
-from runtime import HuntAgentRuntime  # noqa: E402
+from config import load_hub_config  # noqa: E402
+from hub import HubRuntime  # noqa: E402
 
 
 def _ensure_utf8_stdio() -> None:
@@ -29,8 +29,7 @@ def main() -> int:
     except ValueError as exc:
         print(exc, file=sys.stderr)
         return 1
-    settings = hub_config_to_agent_settings(hub_config)
-    runtime = HuntAgentRuntime(settings)
+    runtime = HubRuntime(hub_config)
     try:
         if hub_config.once:
             runtime.crawl_once()

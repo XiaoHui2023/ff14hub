@@ -4,42 +4,61 @@
 # 数据来自 Bear Tracker：https://tracker.beartoolkit.com/timer
 # 名称须与站点上显示的数据中心、世界名一致（国服用中文，国际服用英文）。
 
-# 数据中心列表，可写多项。
-# 国服示例：猫小胖、莫古力
-# 国际服示例：Aether、Crystal
-# [] 表示不按数据中心筛选（结果很多，日常追踪一般不这样配）
-data_centers:
-  - 猫小胖
-
-# 世界列表，可写多项；世界须属于上面填的数据中心。
-# 只填 data_centers、这里留 [] 时，会展开这些数据中心下的全部世界。
-# 国服示例：静语庄园、延夏
-# 国际服示例：Adamantoise、Cactuar
-worlds:
-  - 静语庄园
-
-# 狩猎等级，可写 s、a、fate 的任意组合。
-# s = S 级，a = A 级，fate = FATE
-ranks:
-  - s
-#  - a
-#  - fate
-
-# 资料片筛选，可写多项。
-# 可写 Bear Tracker 缩写（DT、EW、SB …）或中文资料片名（金曦之遗辉、红莲之狂潮 …）
-# [] 表示不过滤资料片
-patches:
-  - 金曦之遗辉
-#  - DT
-
-# 新检出刷点的聚合输出根目录（相对路径相对于仓库根）。
-# null：只在终端显示，不保存到文件
-# 目录示例：output/spawns
-spawn_output: null
-
-# 刚刷新宽限（秒）。在此时间内仍算「刚刷新」，轮询间隔会偏短。
-recent_grace_seconds: 900
-
 # false：持续轮询，终端会显示下次爬取时间，Ctrl+C 退出
 # true：只爬取一次后退出
 once: false
+
+# 猎猎追踪源（省略整段表示不启用；与新闻源并行、互不影响）
+hunt:
+  enabled: true
+  # 数据中心列表，可写多项。
+  # 国服示例：猫小胖、莫古力
+  # 国际服示例：Aether、Crystal
+  # [] 表示不按数据中心筛选（结果很多，日常追踪一般不这样配）
+  data_centers:
+    - 猫小胖
+
+  # 世界列表，可写多项；世界须属于上面填的数据中心。
+  # 只填 data_centers、这里留 [] 时，会展开这些数据中心下的全部世界。
+  # 国服示例：静语庄园、延霞
+  # 国际服示例：Adamantoise、Cactuar
+  worlds:
+    - 静语庄园
+
+  # 猎猎等级，可选 s、a、fate 的任意组合。
+  # s = S 级，a = A 级，fate = FATE
+  ranks:
+    - s
+  #  - a
+  #  - fate
+
+  # 资料片筛选，可写多项。
+  # 可写 Bear Tracker 缩写（DT、EW、SB …）或中文资料片名（金曦之遗辉、红莲之狂潮 …）
+  # [] 表示不过滤资料片
+  patches:
+    - 金曦之遗辉
+  #  - DT
+
+  # 新检出刷点的聚合输出根目录（相对路径相对于仓库根）。
+  # null：只在终端显示，不保存到文件
+  # 目录示例：output/spawns
+  spawn_output: null
+
+  # 刚刷新宽限（秒）。在此时间内仍算「刚刷新」，轮询间隔会偏短。
+  recent_grace_seconds: 900
+
+  # 猎猎源 onebot-protocol JSON 行广播端口；外部客户端连上后，每条新检出各发一行
+  # null：不广播
+  # broadcast_port: 8766
+
+# FF14 新闻源（省略整段表示不启用；与猎猎源并行、互不影响）
+# news:
+#   enabled: true
+#   poll_interval_minutes: 15
+#   limit_per_channel: 5
+#   broadcast_port: 8765
+#   enable_cn_official: true
+#   enable_cn_weibo: true
+#   enable_jp_official: true
+#   cn_weibo_cookie: null
+#   cn_weibo_cookie_storage_path: null

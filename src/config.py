@@ -7,7 +7,7 @@ from configlib import load_config
 from ff14_the_hunt import HuntRankKind
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
-from runtime import AgentSettings
+from runtime.hunt_runtime import AgentSettings
 
 RankToken = Literal["s", "a", "fate"]
 
@@ -18,11 +18,12 @@ _RANK_MAP: dict[RankToken, HuntRankKind] = {
 }
 
 
-class HubConfig(BaseModel):
-    """ff14hub 根配置，对应仓库根 ``config.yaml``。"""
+class HuntSourceConfig(BaseModel):
+    """FF14 狩猎追踪源配置。"""
 
     model_config = ConfigDict(extra="forbid")
 
+    enabled: bool = Field(default=True, description="是否启用狩猎源")
     data_centers: list[str] = Field(
         default_factory=list,
         description="数据中心名；空表示不过滤",
@@ -47,9 +48,11 @@ class HubConfig(BaseModel):
         default=900.0,
         description="刚刷新宽限秒数",
     )
-    once: bool = Field(
-        default=False,
-        description="为 true 时只爬取一次后退出",
+    broadcast_port: int | None = Field(
+        default=None,
+        ge=1,
+        le=65535,
+        description="onebot-protocol JSON 行广播端口；未配置则不广播",
     )
 
     @field_validator("ranks", mode="after")
@@ -58,6 +61,60 @@ class HubConfig(BaseModel):
         if value:
             return value
         return ["s"]
+
+
+class NewsSourceConfig(BaseModel):
+    """FF14 新闻源配置。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    enabled: bool = Field(default=True, description="是否启用新闻源")
+    poll_interval_minutes: float = Field(
+        default=15.0,
+        gt=0,
+        description="两次爬取间隔（分钟）",
+    )
+    limit_per_channel: int = Field(
+        default=5,
+        ge=1,
+        description="每个渠道每次抓取条数",
+    )
+    broadcast_port: int | None = Field(
+        default=None,
+        ge=1,
+        le=65535,
+        description="onebot-protocol JSON 行广播端口；未配置则不广播",
+    )
+    enable_cn_official: bool = Field(default=True, description="启用国服官网渠道")
+    enable_cn_weibo: bool = Field(default=True, description="启用官方微博渠道")
+    enable_jp_official: bool = Field(default=True, description="启用日文 Lodestone 渠道")
+    cn_weibo_cookie: str | None = Field(
+        default=None,
+        description="微博 Cookie 整串；空则尝试 Playwright 自动获取",
+    )
+    cn_weibo_cookie_storage_path: str | None = Field(
+        default=None,
+        description="Playwright 微博会话缓存路径",
+    )
+
+
+class HubConfig(BaseModel):
+    """ff14hub 根配置，对应仓库根 ``config.yaml``。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    once: bool = Field(
+        default=False,
+        description="为 true 时各已启用源只爬取一次后退出",
+    )
+    hunt: HuntSourceConfig | None = Field(
+        default=None,
+        description="狩猎追踪源；省略表示不启用",
+    )
+    news: NewsSourceConfig | None = Field(
+        default=None,
+        description="FF14 新闻源；省略表示不启用",
+    )
 
 
 def project_root() -> Path:
@@ -84,16 +141,47 @@ def load_hub_config(path: Path | None = None) -> HubConfig:
         raise ValueError(f"config.yaml 校验失败：{exc}") from exc
 
 
-def hub_config_to_agent_settings(config: HubConfig) -> AgentSettings:
+def hub_config_to_hunt_settings(config: HubConfig) -> AgentSettings:
+    if config.hunt is None:
+        raise ValueError("未配置 hunt 源")
+    hunt = config.hunt
     spawn_output: Path | None = None
-    if config.spawn_output:
-        spawn_output = Path(config.spawn_output)
+    if hunt.spawn_output:
+        spawn_output = Path(hunt.spawn_output)
     return AgentSettings(
-        data_centers=list(config.data_centers),
-        worlds=list(config.worlds),
-        rank_kinds=[_RANK_MAP[token] for token in config.ranks],
-        patches=list(config.patches),
+        data_centers=list(hunt.data_centers),
+        worlds=list(hunt.worlds),
+        rank_kinds=[_RANK_MAP[token] for token in hunt.ranks],
+        patches=list(hunt.patches),
         spawn_output=spawn_output,
-        recent_grace_seconds=config.recent_grace_seconds,
+        recent_grace_seconds=hunt.recent_grace_seconds,
         continuous_poll=not config.once,
+        broadcast_port=hunt.broadcast_port,
+    )
+
+
+def hub_config_to_agent_settings(config: HubConfig) -> AgentSettings:
+    """``hub_config_to_hunt_settings`` 的兼容别名。"""
+    return hub_config_to_hunt_settings(config)
+
+
+def hub_config_to_news_settings(config: HubConfig):
+    from runtime.news_runtime import NewsAgentSettings
+
+    if config.news is None:
+        raise ValueError("未配置 news 源")
+    news = config.news
+    cookie_storage: Path | None = None
+    if news.cn_weibo_cookie_storage_path:
+        cookie_storage = Path(news.cn_weibo_cookie_storage_path)
+    return NewsAgentSettings(
+        poll_interval_seconds=news.poll_interval_minutes * 60.0,
+        limit_per_channel=news.limit_per_channel,
+        broadcast_port=news.broadcast_port,
+        continuous_poll=not config.once,
+        enable_cn_official=news.enable_cn_official,
+        enable_cn_weibo=news.enable_cn_weibo,
+        enable_jp_official=news.enable_jp_official,
+        cn_weibo_cookie=news.cn_weibo_cookie,
+        cn_weibo_cookie_storage_path=cookie_storage,
     )
