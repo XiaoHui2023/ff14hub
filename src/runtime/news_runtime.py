@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import logging
 import threading
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 
 from ff14_news import FF14News
+from ff14_news.channels.cn_weibo.exceptions import WeiboAccessError
 
 from impl.broadcast.onebot_port import OnebotPortBroadcaster
 from impl.news.onebot_adapt import article_to_message_payload
@@ -27,6 +28,17 @@ class NewsAgentSettings:
     enable_jp_official: bool = True
     cn_weibo_cookie: str | None = None
     cn_weibo_cookie_storage_path: Path | None = None
+
+
+def create_news_runtime(settings: NewsAgentSettings) -> NewsAgentRuntime:
+    """构造新闻运行时；官方微博缺 Playwright 时降级为跳过该渠道。"""
+    try:
+        return NewsAgentRuntime(settings)
+    except WeiboAccessError as exc:
+        if not settings.enable_cn_weibo:
+            raise
+        _log.warning("官方微博需要 Playwright Chromium，已跳过该渠道：%s", exc)
+        return NewsAgentRuntime(replace(settings, enable_cn_weibo=False))
 
 
 class NewsAgentRuntime:

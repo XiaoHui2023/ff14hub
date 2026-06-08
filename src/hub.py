@@ -10,7 +10,7 @@ from config import (
     hub_config_to_news_settings,
 )
 from runtime.hunt_runtime import HuntAgentRuntime
-from runtime.news_runtime import NewsAgentRuntime
+from runtime.news_runtime import create_news_runtime
 
 _log = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class HubRuntime:
             self._hunt = HuntAgentRuntime(hub_config_to_hunt_settings(config))
         self._news: NewsAgentRuntime | None = None
         if config.news is not None and config.news.enabled:
-            self._news = NewsAgentRuntime(hub_config_to_news_settings(config))
+            self._news = create_news_runtime(hub_config_to_news_settings(config))
         if self._hunt is None and self._news is None:
             raise ValueError("未启用任何信息源（hunt / news 均未配置或 enabled: false）")
         self._news_thread: threading.Thread | None = None

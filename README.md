@@ -42,6 +42,8 @@ ff14hub/
 
 `-g` 管控制台与普通 `.log`；`-d` 目录下各模块 `.log` 始终只收 DEBUG。
 
+`run.bat` / `update.bat` 会在启用新闻且走官方微博渠道时自动检查 Playwright Chromium（首次约 180MB）。也可手动：`python -m playwright install chromium`。
+
 ## 开发与测试
 
 | 操作 | 命令 |
