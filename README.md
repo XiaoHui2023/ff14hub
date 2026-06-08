@@ -12,8 +12,8 @@ ff14hub/
 ├── tests/                   # 单元测试
 ├── pyproject.toml
 ├── update.bat               # 创建 .venv 并 pip install -e ".[dev]"
-├── run.bat                  # 无 .venv 时先 update，再 python src
-└── test.bat                 # 无 .venv 时先 update，再 pytest
+├── run.bat                  # 需已有 .venv，再 python src
+└── test.bat                 # 需已有 .venv，再 pytest
 ```
 
 ## 配置
@@ -42,7 +42,7 @@ ff14hub/
 
 `-g` 管控制台与普通 `.log`；`-d` 目录下各模块 `.log` 始终只收 DEBUG。
 
-`run.bat` / `update.bat` 会在启用新闻且走官方微博渠道时自动检查 Playwright Chromium（首次约 180MB）。也可手动：`python -m playwright install chromium`。
+`run.bat` 启动前会检查 Playwright Chromium；未安装时退出并提示命令（首次约 180MB）。安装：`python -m playwright install chromium`（在已激活的 `.venv` 下执行）。
 
 ## 开发与测试
 

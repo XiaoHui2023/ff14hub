@@ -6,4 +6,3 @@ if not exist ".venv\Scripts\python.exe" (
 call .venv\Scripts\activate.bat
 python -m pip install -U pip
 pip install -U -e ".[dev]"
-python src\ensure_playwright.py
