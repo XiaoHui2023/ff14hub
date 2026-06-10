@@ -119,7 +119,10 @@ class NewsAgentRuntime:
     def run(self) -> None:
         try:
             while not self._stop.is_set():
-                self.crawl_once()
+                try:
+                    self.crawl_once()
+                except Exception as exc:
+                    _log.exception("新闻爬取失败，下轮间隔后重试：%s", exc)
                 if not self._settings.continuous_poll:
                     break
                 if self._stop.wait(timeout=self._settings.poll_interval_seconds):

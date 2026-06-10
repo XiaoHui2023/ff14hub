@@ -78,26 +78,29 @@ class HuntAgentRuntime:
             self._broadcaster = None
 
     def _on_crawl(self, packet: HuntCrawlPacket) -> None:
-        _log.info(
-            "狩猎爬取完成 marks=%s new=%s",
-            len(packet.marks),
-            len(packet.newly_spawned_marks),
-        )
-        self._sink.on_crawl(packet)
-        for mark in packet.newly_spawned_marks:
-            if self._broadcaster is not None:
-                payload = mark_to_message_payload(
-                    mark,
-                    locale=HuntDisplayLocale.ZH,
-                )
-                self._broadcaster.broadcast(payload)
-        output_root = self._settings.spawn_output
-        if output_root is None:
-            return
-        for mark in packet.newly_spawned_marks:
-            bundle_dir = write_spawn_bundle(
-                output_root,
-                packet=packet,
-                mark=mark,
+        try:
+            _log.info(
+                "狩猎爬取完成 marks=%s new=%s",
+                len(packet.marks),
+                len(packet.newly_spawned_marks),
             )
-            self._sink.notify_export(bundle_dir)
+            self._sink.on_crawl(packet)
+            for mark in packet.newly_spawned_marks:
+                if self._broadcaster is not None:
+                    payload = mark_to_message_payload(
+                        mark,
+                        locale=HuntDisplayLocale.ZH,
+                    )
+                    self._broadcaster.broadcast(payload)
+            output_root = self._settings.spawn_output
+            if output_root is None:
+                return
+            for mark in packet.newly_spawned_marks:
+                bundle_dir = write_spawn_bundle(
+                    output_root,
+                    packet=packet,
+                    mark=mark,
+                )
+                self._sink.notify_export(bundle_dir)
+        except Exception as exc:
+            _log.exception("狩猎展示或导出失败，已跳过本轮：%s", exc)
