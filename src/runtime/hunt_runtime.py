@@ -79,12 +79,18 @@ class HuntAgentRuntime:
 
     def _on_crawl(self, packet: HuntCrawlPacket) -> None:
         try:
-            _log.info(
-                "狩猎爬取完成 marks=%s new=%s",
-                len(packet.marks),
-                len(packet.newly_spawned_marks),
-            )
-            self._sink.on_crawl(packet)
+            emitted = self._sink.on_crawl(packet)
+            if emitted:
+                _log.info(
+                    "狩猎爬取完成 marks=%s new=%s",
+                    len(packet.marks),
+                    len(packet.newly_spawned_marks),
+                )
+            else:
+                _log.debug(
+                    "狩猎爬取完成（窗口状态未变，已跳过终端摘要） marks=%s",
+                    len(packet.marks),
+                )
             for mark in packet.newly_spawned_marks:
                 if self._broadcaster is not None:
                     payload = mark_to_message_payload(
