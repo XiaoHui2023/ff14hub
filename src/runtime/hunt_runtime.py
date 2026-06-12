@@ -88,7 +88,7 @@ class HuntAgentRuntime:
                 )
             else:
                 _log.debug(
-                    "狩猎爬取完成（窗口状态未变，已跳过终端摘要） marks=%s",
+                    "狩猎爬取完成（无新检出，已跳过终端摘要） marks=%s",
                     len(packet.marks),
                 )
             for mark in packet.newly_spawned_marks:

@@ -12,7 +12,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from impl.hunt.crawl_state import crawl_packet_state_key, should_emit_crawl_log
+from impl.hunt.crawl_state import should_emit_crawl_log
 from impl.hunt.format import format_crawl_summary_text, format_mark_message_text
 from impl.hunt.map_image import render_mark_map_image
 from impl.sink.theme import make_console
@@ -37,10 +37,9 @@ class HuntCrawlLogSink:
         self._locale = locale
         self._show_next_fetch = show_next_fetch
         self._console = make_console()
-        self._last_state_key: tuple[tuple[object, ...], ...] | None = None
 
     def on_crawl(self, packet: HuntCrawlPacket) -> bool:
-        if not should_emit_crawl_log(packet, self._last_state_key):
+        if not should_emit_crawl_log(packet):
             return False
 
         summary = format_crawl_summary_text(
@@ -51,7 +50,6 @@ class HuntCrawlLogSink:
 
         if not packet.marks:
             self._console.print("[hunt.dim]（无匹配记录）[/]")
-            self._last_state_key = crawl_packet_state_key(packet)
             return True
 
         table = Table(show_header=True, header_style="hunt.dim", expand=True)
@@ -89,7 +87,6 @@ class HuntCrawlLogSink:
         for mark in packet.newly_spawned_marks:
             self._print_spawn_detail(mark)
 
-        self._last_state_key = crawl_packet_state_key(packet)
         return True
 
     def notify_export(self, bundle_dir: Path) -> None:

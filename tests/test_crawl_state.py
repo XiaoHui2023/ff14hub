@@ -16,11 +16,7 @@ from ff14_the_hunt.models import (
     TimerKind,
 )
 
-from impl.hunt.crawl_state import (
-    crawl_packet_state_key,
-    mark_window_state_key,
-    should_emit_crawl_log,
-)
+from impl.hunt.crawl_state import mark_window_state_key, should_emit_crawl_log
 
 
 def _almost_open_mark(*, remaining_seconds: float, summary: str) -> HuntMarkRecord:
@@ -55,21 +51,12 @@ def test_mark_window_state_key_ignores_remaining_seconds() -> None:
     assert mark_window_state_key(mark_a) == mark_window_state_key(mark_b)
 
 
-def test_should_emit_crawl_log_first_time() -> None:
+def test_should_emit_crawl_log_suppresses_without_newly_spawned() -> None:
     packet = _packet(_almost_open_mark(remaining_seconds=900.0, summary="15:00"))
-    assert should_emit_crawl_log(packet, None) is True
+    assert should_emit_crawl_log(packet) is False
 
 
-def test_should_emit_crawl_log_suppresses_unchanged_window_state() -> None:
-    packet = _packet(_almost_open_mark(remaining_seconds=900.0, summary="15:00"))
-    last_key = crawl_packet_state_key(packet)
-    later = _packet(_almost_open_mark(remaining_seconds=600.0, summary="10:00"))
-    assert should_emit_crawl_log(later, last_key) is False
-
-
-def test_should_emit_crawl_log_emits_on_phase_change() -> None:
-    packet = _packet(_almost_open_mark(remaining_seconds=900.0, summary="15:00"))
-    last_key = crawl_packet_state_key(packet)
+def test_should_emit_crawl_log_suppresses_on_phase_change_without_newly_spawned() -> None:
     opened = HuntMarkRecord(
         hunt_key="hunt_a",
         hunt_name="Hunt A",
@@ -84,14 +71,10 @@ def test_should_emit_crawl_log_emits_on_phase_change() -> None:
             summary="开窗中",
         ),
     )
-    changed = _packet(opened)
-    assert should_emit_crawl_log(changed, last_key) is True
+    assert should_emit_crawl_log(_packet(opened)) is False
 
 
-def test_should_emit_crawl_log_always_emits_for_newly_spawned() -> None:
-    packet = _packet(_almost_open_mark(remaining_seconds=900.0, summary="15:00"))
-    last_key = crawl_packet_state_key(packet)
+def test_should_emit_crawl_log_emits_for_newly_spawned() -> None:
     spawned = _almost_open_mark(remaining_seconds=900.0, summary="15:00")
     spawned.newly_spawned = True
-    fresh = _packet(spawned)
-    assert should_emit_crawl_log(fresh, last_key) is True
+    assert should_emit_crawl_log(_packet(spawned)) is True

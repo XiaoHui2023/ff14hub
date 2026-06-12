@@ -85,27 +85,33 @@ class NewsAgentRuntime:
             window_end=crawl_time,
         )
         self._last_crawl_at = crawl_time
-        _log.info(
-            "新闻爬取完成 new=%s errors=%s",
-            len(new_articles),
-            len(bundle.errors),
-        )
+        new_count = len(new_articles)
+        error_count = len(bundle.errors)
+        if new_count or error_count:
+            _log.info(
+                "新闻爬取完成 new=%s errors=%s",
+                new_count,
+                error_count,
+            )
+        else:
+            _log.debug(
+                "新闻爬取完成（无新增，已跳过终端摘要）",
+            )
 
-        crawled_text = crawl_time.astimezone().strftime("%Y-%m-%d %H:%M:%S")
-        next_fetch_text: str | None = None
-        if self._settings.continuous_poll:
-            next_at = crawl_time.timestamp() + self._settings.poll_interval_seconds
-            next_fetch_text = datetime.fromtimestamp(next_at).strftime("%Y-%m-%d %H:%M:%S")
-
-        self._sink.on_crawl_summary(
-            crawled_at_text=crawled_text,
-            new_count=len(new_articles),
-            next_fetch_text=next_fetch_text,
-        )
+        if new_articles:
+            crawled_text = crawl_time.astimezone().strftime("%Y-%m-%d %H:%M:%S")
+            next_fetch_text: str | None = None
+            if self._settings.continuous_poll:
+                next_at = crawl_time.timestamp() + self._settings.poll_interval_seconds
+                next_fetch_text = datetime.fromtimestamp(next_at).strftime("%Y-%m-%d %H:%M:%S")
+            self._sink.on_crawl_summary(
+                crawled_at_text=crawled_text,
+                new_count=new_count,
+                next_fetch_text=next_fetch_text,
+            )
+            self._sink.on_articles(new_articles)
         if bundle.errors:
             self._sink.on_bundle_errors(bundle.errors)
-        if new_articles:
-            self._sink.on_articles(new_articles)
         for article in new_articles:
             channel = self._news.channel(article.channel_id)
             payload = article_to_message_payload(

@@ -32,21 +32,13 @@ def crawl_packet_state_key(packet: HuntCrawlPacket) -> CrawlStateKey:
     return tuple(sorted(mark_window_state_key(mark) for mark in packet.marks))
 
 
-def should_emit_crawl_log(
-    packet: HuntCrawlPacket,
-    last_state_key: CrawlStateKey | None,
-) -> bool:
+def should_emit_crawl_log(packet: HuntCrawlPacket) -> bool:
     """是否应向终端输出本轮爬取摘要。
 
     Args:
         packet: 本轮爬取结果。
-        last_state_key: 上一轮已打印时的 ``crawl_packet_state_key``；首轮为 ``None``。
 
     Returns:
-        新检出、首轮，或窗口阶段等指纹变化时为 ``True``。
+        存在新检出时为 ``True``。
     """
-    if packet.newly_spawned_marks:
-        return True
-    if last_state_key is None:
-        return True
-    return crawl_packet_state_key(packet) != last_state_key
+    return bool(packet.newly_spawned_marks)
