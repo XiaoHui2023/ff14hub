@@ -48,12 +48,20 @@ class HuntSourceConfig(BaseModel):
         default=900.0,
         description="刚刷新宽限秒数",
     )
-    broadcast_port: int | None = Field(
+    broadcast_url: str | None = Field(
         default=None,
-        ge=1,
-        le=65535,
-        description="onebot-protocol JSON 行广播端口；未配置则不广播",
+        description="onebot HTTP 推送地址（POST /send）；未配置则不广播",
     )
+
+    @field_validator("broadcast_url", mode="before")
+    @classmethod
+    def _empty_broadcast_url(cls, value: object) -> object:
+        if value is None:
+            return None
+        if isinstance(value, str):
+            stripped = value.strip()
+            return stripped if stripped else None
+        return value
 
     @field_validator("ranks", mode="after")
     @classmethod
@@ -79,12 +87,21 @@ class NewsSourceConfig(BaseModel):
         ge=1,
         description="每个渠道每次抓取条数",
     )
-    broadcast_port: int | None = Field(
+    broadcast_url: str | None = Field(
         default=None,
-        ge=1,
-        le=65535,
-        description="onebot-protocol JSON 行广播端口；未配置则不广播",
+        description="onebot HTTP 推送地址（POST /send）；未配置则不广播",
     )
+
+    @field_validator("broadcast_url", mode="before")
+    @classmethod
+    def _empty_news_broadcast_url(cls, value: object) -> object:
+        if value is None:
+            return None
+        if isinstance(value, str):
+            stripped = value.strip()
+            return stripped if stripped else None
+        return value
+
     enable_cn_official: bool = Field(default=True, description="启用国服官网渠道")
     enable_cn_weibo: bool = Field(default=True, description="启用官方微博渠道")
     enable_jp_official: bool = Field(default=True, description="启用日文 Lodestone 渠道")
@@ -156,7 +173,7 @@ def hub_config_to_hunt_settings(config: HubConfig) -> AgentSettings:
         spawn_output=spawn_output,
         recent_grace_seconds=hunt.recent_grace_seconds,
         continuous_poll=not config.once,
-        broadcast_port=hunt.broadcast_port,
+        broadcast_url=hunt.broadcast_url,
     )
 
 
@@ -177,7 +194,7 @@ def hub_config_to_news_settings(config: HubConfig):
     return NewsAgentSettings(
         poll_interval_seconds=news.poll_interval_minutes * 60.0,
         limit_per_channel=news.limit_per_channel,
-        broadcast_port=news.broadcast_port,
+        broadcast_url=news.broadcast_url,
         continuous_poll=not config.once,
         enable_cn_official=news.enable_cn_official,
         enable_cn_weibo=news.enable_cn_weibo,

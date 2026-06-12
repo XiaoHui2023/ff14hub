@@ -47,16 +47,16 @@ hunt:
   # 刚刷新宽限（秒）。在此时间内仍算「刚刷新」，轮询间隔会偏短。
   recent_grace_seconds: 900
 
-  # 猎猎源 onebot-protocol JSON 行广播端口；外部客户端连上后，每条新检出各发一行
+  # 猎猎源 onebot HTTP 推送地址（POST /send）；每条新检出各 POST 一次
   # null：不广播
-  # broadcast_port: 8766
+  # broadcast_url: http://127.0.0.1:8766/send
 
 # FF14 新闻源（省略整段表示不启用；与猎猎源并行、互不影响）
 # news:
 #   enabled: true
 #   poll_interval_minutes: 15
 #   limit_per_channel: 5
-#   broadcast_port: 8765
+#   broadcast_url: http://127.0.0.1:8766/send
 #   enable_cn_official: true
 #   enable_cn_weibo: true
 #   enable_jp_official: true

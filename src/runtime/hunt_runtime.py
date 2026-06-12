@@ -8,7 +8,7 @@ from pathlib import Path
 from ff14_the_hunt import FF14TheHunt, HuntCrawlPacket, HuntRankKind
 from ff14_the_hunt.locale.tag import HuntDisplayLocale
 
-from impl.broadcast.onebot_port import OnebotPortBroadcaster
+from impl.broadcast.http_notify import HttpSendNotifier
 from impl.export.spawn_bundle import write_spawn_bundle
 from impl.hunt.onebot_adapt import mark_to_message_payload
 from impl.sink.crawl_log import HuntCrawlLogSink
@@ -25,7 +25,7 @@ class AgentSettings:
     spawn_output: Path | None
     recent_grace_seconds: float
     continuous_poll: bool = True
-    broadcast_port: int | None = None
+    broadcast_url: str | None = None
 
 
 class HuntAgentRuntime:
@@ -46,11 +46,11 @@ class HuntAgentRuntime:
             include_spawn_maps=True,
         )
         self._hunt.on_crawl(self._on_crawl)
-        self._broadcaster: OnebotPortBroadcaster | None = None
-        if settings.broadcast_port is not None:
-            self._broadcaster = OnebotPortBroadcaster(settings.broadcast_port)
-            self._broadcaster.start()
-            _log.info("狩猎源 onebot 广播端口 %s", settings.broadcast_port)
+        self._notifier: HttpSendNotifier | None = None
+        if settings.broadcast_url is not None:
+            self._notifier = HttpSendNotifier(settings.broadcast_url)
+            self._notifier.start()
+            _log.info("狩猎源 onebot HTTP 推送 %s", settings.broadcast_url)
 
     @property
     def hunt(self) -> FF14TheHunt:
@@ -73,9 +73,9 @@ class HuntAgentRuntime:
         return self._hunt.crawl_once()
 
     def shutdown(self) -> None:
-        if self._broadcaster is not None:
-            self._broadcaster.stop()
-            self._broadcaster = None
+        if self._notifier is not None:
+            self._notifier.stop()
+            self._notifier = None
 
     def _on_crawl(self, packet: HuntCrawlPacket) -> None:
         try:
@@ -92,12 +92,12 @@ class HuntAgentRuntime:
                     len(packet.marks),
                 )
             for mark in packet.newly_spawned_marks:
-                if self._broadcaster is not None:
+                if self._notifier is not None:
                     payload = mark_to_message_payload(
                         mark,
                         locale=HuntDisplayLocale.ZH,
                     )
-                    self._broadcaster.broadcast(payload)
+                    self._notifier.broadcast(payload)
             output_root = self._settings.spawn_output
             if output_root is None:
                 return

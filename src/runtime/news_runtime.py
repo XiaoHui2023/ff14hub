@@ -9,7 +9,7 @@ from pathlib import Path
 from ff14_news import FF14News
 from ff14_news.channels.cn_weibo.exceptions import WeiboAccessError
 
-from impl.broadcast.onebot_port import OnebotPortBroadcaster
+from impl.broadcast.http_notify import HttpSendNotifier
 from impl.news.onebot_adapt import article_to_message_payload
 from impl.news.window import select_articles_in_window
 from impl.sink.news_feed_log import NewsFeedLogSink
@@ -21,7 +21,7 @@ _log = logging.getLogger(__name__)
 class NewsAgentSettings:
     poll_interval_seconds: float
     limit_per_channel: int
-    broadcast_port: int | None
+    broadcast_url: str | None
     continuous_poll: bool
     enable_cn_official: bool = True
     enable_cn_weibo: bool = True
@@ -61,19 +61,19 @@ class NewsAgentRuntime:
             for channel_id in self._news.available_channels()
         }
         self._sink = NewsFeedLogSink(channels=channel_map)
-        self._broadcaster: OnebotPortBroadcaster | None = None
-        if settings.broadcast_port is not None:
-            self._broadcaster = OnebotPortBroadcaster(settings.broadcast_port)
-            self._broadcaster.start()
-            _log.info("新闻源 onebot 广播端口 %s", settings.broadcast_port)
+        self._notifier: HttpSendNotifier | None = None
+        if settings.broadcast_url is not None:
+            self._notifier = HttpSendNotifier(settings.broadcast_url)
+            self._notifier.start()
+            _log.info("新闻源 onebot HTTP 推送 %s", settings.broadcast_url)
 
     def stop(self) -> None:
         self._stop.set()
 
     def shutdown(self) -> None:
-        if self._broadcaster is not None:
-            self._broadcaster.stop()
-            self._broadcaster = None
+        if self._notifier is not None:
+            self._notifier.stop()
+            self._notifier = None
 
     def crawl_once(self) -> int:
         window_start = self._last_crawl_at
@@ -112,8 +112,8 @@ class NewsAgentRuntime:
                 article,
                 display_name=channel.display_name,
             )
-            if self._broadcaster is not None:
-                self._broadcaster.broadcast(payload)
+            if self._notifier is not None:
+                self._notifier.broadcast(payload)
         return len(new_articles)
 
     def run(self) -> None:

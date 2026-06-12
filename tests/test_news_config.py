@@ -21,7 +21,7 @@ def test_load_hub_config_with_news(tmp_path: Path) -> None:
         "  enabled: true\n"
         "  poll_interval_minutes: 10\n"
         "  limit_per_channel: 3\n"
-        "  broadcast_port: 9001\n"
+        "  broadcast_url: http://127.0.0.1:9001/send\n"
         "once: true\n",
         encoding="utf-8",
     )
@@ -29,7 +29,7 @@ def test_load_hub_config_with_news(tmp_path: Path) -> None:
     assert loaded.news is not None
     assert loaded.news.poll_interval_minutes == 10.0
     assert loaded.news.limit_per_channel == 3
-    assert loaded.news.broadcast_port == 9001
+    assert loaded.news.broadcast_url == "http://127.0.0.1:9001/send"
 
 
 def test_hub_config_to_news_settings() -> None:
@@ -38,13 +38,13 @@ def test_hub_config_to_news_settings() -> None:
             "enabled": True,
             "poll_interval_minutes": 15,
             "limit_per_channel": 5,
-            "broadcast_port": 8765,
+            "broadcast_url": "http://127.0.0.1:8765/send",
         },
     )
     settings = hub_config_to_news_settings(config)
     assert settings.poll_interval_seconds == 900.0
     assert settings.limit_per_channel == 5
-    assert settings.broadcast_port == 8765
+    assert settings.broadcast_url == "http://127.0.0.1:8765/send"
     assert settings.continuous_poll is True
 
 
