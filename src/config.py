@@ -18,6 +18,31 @@ _RANK_MAP: dict[RankToken, HuntRankKind] = {
 }
 
 
+def _empty_to_none(value: object) -> object:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        stripped = value.strip()
+        return stripped if stripped else None
+    return value
+
+
+def _broadcast_endpoint_url(
+    broadcast_url: str | None,
+    broadcast_host: str,
+    broadcast_port: int | None,
+) -> str | None:
+    if broadcast_url is not None:
+        url = broadcast_url.rstrip("/")
+        if not url.endswith("/send"):
+            return f"{url}/send"
+        return url
+    if broadcast_port is None:
+        return None
+    host = broadcast_host.strip() or "127.0.0.1"
+    return f"http://{host}:{broadcast_port}/send"
+
+
 class HuntSourceConfig(BaseModel):
     """FF14 狩猎追踪源配置。"""
 
@@ -52,16 +77,26 @@ class HuntSourceConfig(BaseModel):
         default=None,
         description="onebot HTTP 推送地址（POST /send）；未配置则不广播",
     )
+    broadcast_host: str = Field(default="127.0.0.1", description="onebothub 起点 HTTP 地址")
+    broadcast_port: int | None = Field(
+        default=None,
+        ge=1,
+        le=65535,
+        description="onebothub 起点 HTTP 端口；未配置则不广播",
+    )
 
     @field_validator("broadcast_url", mode="before")
     @classmethod
     def _empty_broadcast_url(cls, value: object) -> object:
-        if value is None:
-            return None
-        if isinstance(value, str):
-            stripped = value.strip()
-            return stripped if stripped else None
-        return value
+        return _empty_to_none(value)
+
+    @property
+    def broadcast_endpoint_url(self) -> str | None:
+        return _broadcast_endpoint_url(
+            self.broadcast_url,
+            self.broadcast_host,
+            self.broadcast_port,
+        )
 
     @field_validator("ranks", mode="after")
     @classmethod
@@ -91,16 +126,26 @@ class NewsSourceConfig(BaseModel):
         default=None,
         description="onebot HTTP 推送地址（POST /send）；未配置则不广播",
     )
+    broadcast_host: str = Field(default="127.0.0.1", description="onebothub 起点 HTTP 地址")
+    broadcast_port: int | None = Field(
+        default=None,
+        ge=1,
+        le=65535,
+        description="onebothub 起点 HTTP 端口；未配置则不广播",
+    )
 
     @field_validator("broadcast_url", mode="before")
     @classmethod
     def _empty_news_broadcast_url(cls, value: object) -> object:
-        if value is None:
-            return None
-        if isinstance(value, str):
-            stripped = value.strip()
-            return stripped if stripped else None
-        return value
+        return _empty_to_none(value)
+
+    @property
+    def broadcast_endpoint_url(self) -> str | None:
+        return _broadcast_endpoint_url(
+            self.broadcast_url,
+            self.broadcast_host,
+            self.broadcast_port,
+        )
 
     enable_cn_official: bool = Field(default=True, description="启用国服官网渠道")
     enable_cn_weibo: bool = Field(default=True, description="启用官方微博渠道")
@@ -173,7 +218,7 @@ def hub_config_to_hunt_settings(config: HubConfig) -> AgentSettings:
         spawn_output=spawn_output,
         recent_grace_seconds=hunt.recent_grace_seconds,
         continuous_poll=not config.once,
-        broadcast_url=hunt.broadcast_url,
+        broadcast_url=hunt.broadcast_endpoint_url,
     )
 
 
@@ -194,7 +239,7 @@ def hub_config_to_news_settings(config: HubConfig):
     return NewsAgentSettings(
         poll_interval_seconds=news.poll_interval_minutes * 60.0,
         limit_per_channel=news.limit_per_channel,
-        broadcast_url=news.broadcast_url,
+        broadcast_url=news.broadcast_endpoint_url,
         continuous_poll=not config.once,
         enable_cn_official=news.enable_cn_official,
         enable_cn_weibo=news.enable_cn_weibo,

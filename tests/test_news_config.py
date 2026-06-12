@@ -48,6 +48,33 @@ def test_hub_config_to_news_settings() -> None:
     assert settings.continuous_poll is True
 
 
+def test_news_broadcast_port_builds_send_endpoint() -> None:
+    config = HubConfig(
+        news={
+            "enabled": True,
+            "poll_interval_minutes": 15,
+            "limit_per_channel": 5,
+            "broadcast_port": 40010,
+        },
+    )
+    settings = hub_config_to_news_settings(config)
+    assert settings.broadcast_url == "http://127.0.0.1:40010/send"
+
+
+def test_news_broadcast_host_and_port_build_send_endpoint() -> None:
+    config = HubConfig(
+        news={
+            "enabled": True,
+            "poll_interval_minutes": 15,
+            "limit_per_channel": 5,
+            "broadcast_host": "192.168.1.20",
+            "broadcast_port": 40010,
+        },
+    )
+    settings = hub_config_to_news_settings(config)
+    assert settings.broadcast_url == "http://192.168.1.20:40010/send"
+
+
 def test_hub_config_to_news_settings_requires_section() -> None:
     with pytest.raises(ValueError, match="未配置 news"):
         hub_config_to_news_settings(HubConfig())
