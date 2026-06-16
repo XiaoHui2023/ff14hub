@@ -30,5 +30,8 @@ def test_format_mark_message_text() -> None:
         ),
     )
     text = format_mark_message_text(mark)
-    assert "静语庄园" in text
-    assert "12:34" in text
+    assert text.startswith("[")
+    assert "]" in text
+    assert "静语庄园" not in text
+    assert "12:34" not in text
+    assert "刷点" not in text

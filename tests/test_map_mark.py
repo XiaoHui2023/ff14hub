@@ -9,7 +9,7 @@ _SRC = Path(__file__).resolve().parents[1] / "src"
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
-from impl.export.map_mark import mark_region_map_png
+from impl.export.map_mark import _format_game_coordinate, mark_region_map_png
 from ff14_the_hunt.models import MapCoordinate
 
 
@@ -36,6 +36,17 @@ def _solid_png(*, width: int, height: int, rgba: tuple[int, int, int, int]) -> b
     )
 
 
+def test_format_game_coordinate_uses_grid_values() -> None:
+    point = MapCoordinate(
+        point_key="SpawnPoint04",
+        x=0.105,
+        y=0.679,
+        grid_x=5.0,
+        grid_y=28.0,
+    )
+    assert _format_game_coordinate(point) == "5, 28"
+
+
 def test_mark_region_map_png_changes_bytes() -> None:
     source = _solid_png(width=32, height=32, rgba=(20, 40, 60, 255))
     points = [
@@ -43,6 +54,8 @@ def test_mark_region_map_png_changes_bytes() -> None:
             point_key="SpawnPoint01",
             x=0.5,
             y=0.5,
+            grid_x=21.0,
+            grid_y=21.0,
             pixel_x=16.0,
             pixel_y=16.0,
         )

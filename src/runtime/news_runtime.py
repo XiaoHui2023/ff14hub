@@ -113,11 +113,7 @@ class NewsAgentRuntime:
         if bundle.errors:
             self._sink.on_bundle_errors(bundle.errors)
         for article in new_articles:
-            channel = self._news.channel(article.channel_id)
-            payload = article_to_message_payload(
-                article,
-                display_name=channel.display_name,
-            )
+            payload = article_to_message_payload(article)
             if self._notifier is not None:
                 self._notifier.broadcast(payload)
         return len(new_articles)

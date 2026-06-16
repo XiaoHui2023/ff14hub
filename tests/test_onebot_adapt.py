@@ -24,10 +24,14 @@ def test_article_to_message_payload() -> None:
         cover_image_url="https://example.com/cover.jpg",
         source_page_url="https://example.com/1",
     )
-    payload = article_to_message_payload(article, display_name="国服官网")
+    payload = article_to_message_payload(article)
     assert payload.group_id == "ff14_news:cn_official"
     assert payload.message[0].type == "text"
     assert isinstance(payload.message[0], TextMessageSegment)
-    assert "测试标题" in payload.message[0].data.text
+    text = payload.message[0].data.text
+    assert text == "测试标题\nhttps://example.com/1"
+    assert "摘要" not in text
+    assert "国服官网" not in text
+    assert "2026-06-08" not in text
     assert isinstance(payload.message[1], ImageMessageSegment)
     assert payload.message[1].data.content == "https://example.com/cover.jpg"
