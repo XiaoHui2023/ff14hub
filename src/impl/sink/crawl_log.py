@@ -12,7 +12,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from impl.hunt.crawl_state import should_emit_crawl_log
+from impl.hunt.crawl_state import CrawlStateKey, crawl_packet_state_key, should_emit_crawl_log
 from impl.hunt.format import format_crawl_summary_text, format_mark_message_text
 from impl.hunt.map_image import render_mark_map_image
 from impl.sink.theme import make_console
@@ -33,14 +33,23 @@ class HuntCrawlLogSink:
         *,
         locale: HuntDisplayLocale = HuntDisplayLocale.ZH,
         show_next_fetch: bool = True,
+        print_every_crawl: bool = False,
     ) -> None:
         self._locale = locale
         self._show_next_fetch = show_next_fetch
+        self._print_every_crawl = print_every_crawl
+        self._last_state_key: CrawlStateKey | None = None
         self._console = make_console()
 
     def on_crawl(self, packet: HuntCrawlPacket) -> bool:
-        if not should_emit_crawl_log(packet):
+        if not should_emit_crawl_log(
+            packet,
+            previous_key=self._last_state_key,
+            print_every_crawl=self._print_every_crawl,
+        ):
             return False
+
+        self._last_state_key = crawl_packet_state_key(packet)
 
         summary = format_crawl_summary_text(
             packet,

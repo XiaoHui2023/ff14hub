@@ -84,6 +84,10 @@ class HuntSourceConfig(BaseModel):
         le=65535,
         description="onebothub 起点 HTTP 端口；未配置则不广播",
     )
+    print_every_crawl: bool = Field(
+        default=False,
+        description="为 true 时每轮爬取都打印终端摘要（调试用）；默认仅在状态变化或新检出时打印",
+    )
 
     @field_validator("broadcast_url", mode="before")
     @classmethod
@@ -219,6 +223,7 @@ def hub_config_to_hunt_settings(config: HubConfig) -> AgentSettings:
         recent_grace_seconds=hunt.recent_grace_seconds,
         continuous_poll=not config.once,
         broadcast_url=hunt.broadcast_endpoint_url,
+        print_every_crawl=hunt.print_every_crawl,
     )
 
 

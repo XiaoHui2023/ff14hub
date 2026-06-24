@@ -43,6 +43,7 @@ def test_hub_config_to_hunt_settings() -> None:
             "data_centers": ["猫小胖"],
             "ranks": ["s", "fate"],
             "broadcast_url": "http://127.0.0.1:8766/send",
+            "print_every_crawl": True,
         },
         once=True,
     )
@@ -52,6 +53,7 @@ def test_hub_config_to_hunt_settings() -> None:
     assert settings.continuous_poll is False
     assert settings.spawn_output is None
     assert settings.broadcast_url == "http://127.0.0.1:8766/send"
+    assert settings.print_every_crawl is True
 
 
 def test_hunt_broadcast_port_builds_send_endpoint() -> None:

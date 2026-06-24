@@ -47,6 +47,9 @@ hunt:
   # 刚刷新宽限（秒）。在此时间内仍算「刚刷新」，轮询间隔会偏短。
   recent_grace_seconds: 900
 
+  # 调试用：为 true 时每轮爬取都打印终端摘要；默认 false，仅在怪物状态变化或新检出时打印
+  # print_every_crawl: false
+
   # 猎猎源 onebothub 起点地址；每条新检出各 POST 一次到 /send。
   # null：不广播
   # broadcast_host: 127.0.0.1

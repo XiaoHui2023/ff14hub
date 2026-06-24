@@ -26,6 +26,7 @@ class AgentSettings:
     recent_grace_seconds: float
     continuous_poll: bool = True
     broadcast_url: str | None = None
+    print_every_crawl: bool = False
 
 
 class HuntAgentRuntime:
@@ -36,6 +37,7 @@ class HuntAgentRuntime:
         self._sink = HuntCrawlLogSink(
             locale=HuntDisplayLocale.ZH,
             show_next_fetch=settings.continuous_poll,
+            print_every_crawl=settings.print_every_crawl,
         )
         self._hunt = FF14TheHunt(
             data_centers=settings.data_centers,
